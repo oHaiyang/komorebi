@@ -333,6 +333,9 @@ impl WindowManager {
             SocketMessage::SendContainerToWorkspaceNumber(workspace_idx) => {
                 self.move_container_to_workspace(workspace_idx, false)?;
             }
+            SocketMessage::SendContainerToWorkspaceByHwnd(hwnd, workspace_idx) => {
+                self.move_window_to_workspace_by_hwnd(hwnd, workspace_idx)?;
+            }
             SocketMessage::CycleSendContainerToWorkspace(direction) => {
                 let focused_monitor = self
                     .focused_monitor()

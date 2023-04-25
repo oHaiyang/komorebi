@@ -439,6 +439,10 @@ impl Workspace {
         self.focus_last_container();
     }
 
+    pub fn add_floating_window(&mut self, window: Window) {
+        self.floating_windows_mut().push(window);
+    }
+
     pub fn insert_container_at_idx(&mut self, idx: usize, container: Container) {
         self.containers_mut().insert(idx, container);
     }
@@ -938,6 +942,14 @@ impl Workspace {
                     None
                 }
             }
+        }
+    }
+
+    pub fn remove_floating_window_by_idx(&mut self, idx: usize) -> Option<Window> {
+        if self.floating_windows.get(idx).is_some() {
+            Option::from(self.floating_windows_mut().remove(idx))
+        } else {
+            None
         }
     }
 

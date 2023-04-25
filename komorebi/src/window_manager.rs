@@ -2119,6 +2119,62 @@ impl WindowManager {
             .ok_or_else(|| anyhow!("there is no window"))
     }
 
+    pub fn move_window_to_workspace_by_hwnd(
+        &mut self,
+        hwnd: isize,
+        target_workspace_idx: usize,
+    ) -> Result<()> {
+        let mut origin_workspace_idx = None;
+        let mut origin_container_idx = None;
+        let mut origin_floating_window_idx = None;
+        let mouse_follows_focus = self.mouse_follows_focus;
+        for (midx, monitor) in self.monitors_mut().iter_mut().enumerate() {
+            tracing::info!("iter monitor {}", midx);
+            'workspace: for (widx, workspace) in monitor.workspaces_mut().iter_mut().enumerate() {
+                origin_workspace_idx = Some(widx);
+                tracing::info!("iter workspace {}", widx);
+                for (cidx, container) in workspace.containers().iter().enumerate() {
+                    tracing::info!("iter container {}", cidx);
+                    if container.contains_window(hwnd) {
+                        tracing::info!("found win by hwnd {:?}", container);
+                        origin_container_idx = Some(cidx);
+                        break 'workspace;
+                    }
+                }
+                for (winidx, window) in workspace.floating_windows().iter().enumerate() {
+                    tracing::info!("iter floating window {}", winidx);
+                    if window.hwnd == hwnd {
+                        tracing::info!("found win by hwnd {:?}", window);
+                        origin_floating_window_idx = Some(winidx);
+                        break 'workspace;
+                    }
+                }
+            }
+            if let Some(widx) = origin_workspace_idx {
+                if let Some(cidx) = origin_container_idx {
+                    monitor.move_container_to_workspace_by_idx(
+                        widx,
+                        cidx,
+                        target_workspace_idx,
+                        false,
+                    )?;
+                    monitor.load_focused_workspace(mouse_follows_focus)?;
+                }
+                if let Some(fwidx) = origin_floating_window_idx {
+                    monitor.move_floating_window_to_workspace_by_hwnd(
+                        widx,
+                        fwidx,
+                        target_workspace_idx,
+                        false
+                    )?;
+                    monitor.load_focused_workspace(mouse_follows_focus)?;
+                }
+            }
+        }
+
+        self.update_focused_workspace(mouse_follows_focus)
+    }
+
     fn focused_window_mut(&mut self) -> Result<&mut Window> {
         self.focused_container_mut()?
             .focused_window_mut()

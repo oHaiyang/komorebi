@@ -467,6 +467,15 @@ gen_named_padding_subcommand_args! {
     NamedWorkspacePadding,
 }
 
+#[derive(clap::Parser, derive_ahk::AhkFunction)]
+pub struct HwndToWorkspace {
+    /// window id
+    hwnd: isize,
+
+    /// Workspace index on the target monitor (zero-indexed)
+    target_workspace: usize,
+}
+
 macro_rules! gen_padding_adjustment_subcommand_args {
     // SubCommand Pattern
     ( $( $name:ident ),+ $(,)? ) => {
@@ -745,6 +754,9 @@ enum SubCommand {
     /// Send the focused window to the specified workspace
     #[clap(arg_required_else_help = true)]
     SendToWorkspace(SendToWorkspace),
+    /// Send the hwnd specified window to the specified workspace
+    #[clap(arg_required_else_help = true)]
+    SendToWorkspaceByHwnd(HwndToWorkspace),
     /// Send the focused window to the specified workspace
     #[clap(arg_required_else_help = true)]
     SendToNamedWorkspace(SendToNamedWorkspace),
@@ -1087,6 +1099,12 @@ fn main() -> Result<()> {
         }
         SubCommand::SendToWorkspace(arg) => {
             send_message(&SocketMessage::SendContainerToWorkspaceNumber(arg.target).as_bytes()?)?;
+        }
+        SubCommand::SendToWorkspaceByHwnd(arg) => {
+            send_message(
+                &SocketMessage::SendContainerToWorkspaceByHwnd(arg.hwnd, arg.target_workspace)
+                    .as_bytes()?,
+            )?;
         }
         SubCommand::SendToNamedWorkspace(arg) => {
             send_message(&SocketMessage::SendContainerToNamedWorkspace(arg.workspace).as_bytes()?)?;

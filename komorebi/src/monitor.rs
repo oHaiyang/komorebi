@@ -145,6 +145,74 @@ impl Monitor {
         Ok(())
     }
 
+    pub fn move_container_to_workspace_by_idx(
+        &mut self,
+        origin_workspace_idx: usize,
+        origin_container_idx: usize,
+        target_workspace_idx: usize,
+        follow: bool,
+    ) -> Result<()> {
+        let workspaces = self.workspaces_mut();
+
+        let origin_workspace = workspaces
+            .get_mut(origin_workspace_idx)
+            .ok_or_else(|| anyhow!("cannot find origin workspace"))?;
+        let container = origin_workspace
+            .remove_container_by_idx(origin_container_idx)
+            .ok_or_else(|| anyhow!("cannot find origin container"))?;
+
+        #[allow(clippy::option_if_let_else)]
+        let target_workspace = match workspaces.get_mut(target_workspace_idx) {
+            None => {
+                workspaces.resize(target_workspace_idx + 1, Workspace::default());
+                workspaces.get_mut(target_workspace_idx).unwrap()
+            }
+            Some(workspace) => workspace,
+        };
+
+        target_workspace.add_container(container);
+
+        if follow {
+            self.focus_workspace(target_workspace_idx)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn move_floating_window_to_workspace_by_hwnd(
+        &mut self,
+        origin_workspace_idx: usize,
+        floating_window_idx: usize,
+        target_workspace_idx: usize,
+        follow: bool,
+    ) -> Result<()> {
+        let workspaces = self.workspaces_mut();
+
+        let origin_workspace = workspaces
+            .get_mut(origin_workspace_idx)
+            .ok_or_else(|| anyhow!("cannot find origin workspace"))?;
+        let window = origin_workspace
+            .remove_floating_window_by_idx(floating_window_idx)
+            .ok_or_else(|| anyhow!("cannot find floating window"))?;
+
+        #[allow(clippy::option_if_let_else)]
+        let target_workspace = match workspaces.get_mut(target_workspace_idx) {
+            None => {
+                workspaces.resize(target_workspace_idx + 1, Workspace::default());
+                workspaces.get_mut(target_workspace_idx).unwrap()
+            }
+            Some(workspace) => workspace,
+        };
+
+        target_workspace.add_floating_window(window);
+
+        if follow {
+            self.focus_workspace(target_workspace_idx)?;
+        }
+
+        Ok(())
+    }
+
     #[tracing::instrument(skip(self))]
     pub fn focus_workspace(&mut self, idx: usize) -> Result<()> {
         tracing::info!("focusing workspace");

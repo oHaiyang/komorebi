@@ -53,6 +53,7 @@ pub enum SocketMessage {
     SendContainerToMonitorNumber(usize),
     CycleSendContainerToMonitor(CycleDirection),
     SendContainerToWorkspaceNumber(usize),
+    SendContainerToWorkspaceByHwnd(isize, usize),
     CycleSendContainerToWorkspace(CycleDirection),
     SendContainerToMonitorWorkspaceNumber(usize, usize),
     SendContainerToNamedWorkspace(String),

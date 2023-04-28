@@ -54,11 +54,16 @@ pub fn new(id: isize, size: Rect, work_area_size: Rect, name: String) -> Monitor
 impl Monitor {
     pub fn load_focused_workspace(&mut self, mouse_follows_focus: bool) -> Result<()> {
         let focused_idx = self.focused_workspace_idx();
+        tracing::info!("xxxhhh focused_idx: {}", focused_idx);
         for (i, workspace) in self.workspaces_mut().iter_mut().enumerate() {
             if i == focused_idx {
+                tracing::info!("xxxhhh restore worksapce #{}", i);
                 workspace.restore(mouse_follows_focus)?;
+                tracing::info!("xxxhhh done restore worksapce #{}", i);
             } else {
+                tracing::info!("xxxhhh hide worksapce #{}", i);
                 workspace.hide();
+                tracing::info!("xxxhhh done hide worksapce #{}", i);
             }
         }
 

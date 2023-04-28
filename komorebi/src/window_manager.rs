@@ -2167,7 +2167,9 @@ impl WindowManager {
                         target_workspace_idx,
                         false
                     )?;
+                    tracing::info!("xxxhhh about to load focused workspace");
                     monitor.load_focused_workspace(mouse_follows_focus)?;
+                    tracing::info!("xxxhhh done load focused workspace");
                 }
             }
         }

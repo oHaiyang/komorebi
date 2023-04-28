@@ -109,10 +109,13 @@ impl Workspace {
 
     pub fn restore(&mut self, mouse_follows_focus: bool) -> Result<()> {
         let idx = self.focused_container_idx();
+        tracing::info!("xxxhhh focused_idx: {}", idx);
         let mut to_focus = None;
         for (i, container) in self.containers_mut().iter_mut().enumerate() {
             if let Some(window) = container.focused_window_mut() {
+                tracing::info!("xxxhhh restore window {:?}", window);
                 window.restore();
+                tracing::info!("xxxhhh done restore window {:?}", window);
 
                 if idx == i {
                     to_focus = Option::from(*window);
@@ -121,24 +124,32 @@ impl Workspace {
         }
 
         if let Some(window) = self.maximized_window() {
+            tracing::info!("xxxhhh max window {:?}", window);
             window.maximize();
+            tracing::info!("xxxhhh done max window {:?}", window);
         }
 
         if let Some(container) = self.monocle_container_mut() {
             for window in container.windows_mut() {
+                tracing::info!("xxxhhh restore monocle window {:?}", window);
                 window.restore();
+                tracing::info!("xxxhhh done restore monocle window {:?}", window);
             }
         }
 
         for window in self.floating_windows() {
+            tracing::info!("xxxhhh restore floating window {:?}", window);
             window.restore();
+            tracing::info!("xxxhhh done restore floating window {:?}", window);
         }
 
         // Do this here to make sure that an error doesn't stop the restoration of other windows
         // Maximised windows should always be drawn at the top of the Z order
         if let Some(window) = to_focus {
             if self.maximized_window().is_none() {
+                tracing::info!("xxxhhh focusing window {:?}", window);
                 window.focus(mouse_follows_focus)?;
+                tracing::info!("xxxhhh done focusing window {:?}", window);
             }
         }
 
